@@ -99,6 +99,7 @@ class TimerService : Service() {
                     sleep(1000)
 
                 }
+                TimerInfo.postNewTime(0)
                 isRunning = false
             } catch (e: InterruptedException) {
                 Log.d("Timer interrupted", e.toString())
