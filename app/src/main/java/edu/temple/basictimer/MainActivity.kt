@@ -6,6 +6,8 @@ import android.content.ServiceConnection
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.os.IBinder
+import android.view.Menu
+import android.view.MenuItem
 import android.widget.Button
 import android.widget.TextView
 import androidx.lifecycle.Lifecycle
@@ -34,8 +36,22 @@ start and stop:
 
 another solution would use compose
  */
+
+/*
+
+Create a branch of your previously forked Service activity (https://github.com/karlmorris/ServiceInClassActivity/). Call the branch "menuintegration"
+Replicate all button functions as Menu action
+Make each item an Action Button (if there is room)
+to submit to Canvas:
+Push your new branch (do not merge the branch with master) to GitHub
+Visit the repository website
+On the left of the page above the list of files, you will see the branch selector currently showing 'master'
+Change the current branch to the new branch you pushed, 'menuintegrator'
+Copy the website URL (not the Git url) and submit that to Canvas. It should look like: https://github.com/<your_name>/ServiceInClassActivity/tree/menuintegration
+ */
 class MainActivity : AppCompatActivity() {
     var timerBinder: TimerService.TimerBinder? = null
+    lateinit var startButton: Button
 
     val serviceConnection = object : ServiceConnection {
         override fun onServiceConnected(
@@ -50,6 +66,28 @@ class MainActivity : AppCompatActivity() {
         }
 
     }
+    private fun startTimer() {
+        timerBinder?.start(10)
+        startButton.text = "Pause"
+    }
+    private fun pauseTimer() {
+        timerBinder?.run{
+            if (isRunning) {
+                pause()
+                startButton.text = "Resume"
+            }
+        }
+    }
+    private fun stopTimer() {
+        timerBinder?.run{
+            if (isPaused) {
+                pause()
+            }
+            stop()
+        }
+        startButton.text = "Start"
+    }
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -59,7 +97,14 @@ class MainActivity : AppCompatActivity() {
             Intent(this, TimerService::class.java), serviceConnection, BIND_AUTO_CREATE
         )
 
-        // easier?
+        startButton = findViewById(R.id.startButton)
+        startButton.setOnClickListener {
+            timerBinder?.run{if(isRunning) pauseTimer() else startTimer() }
+        }
+        findViewById<Button>(R.id.stopButton).setOnClickListener { stopTimer() }
+
+        /*
+        easier?
         val startButton = findViewById<Button>(R.id.startButton)
         startButton.setOnClickListener {
             timerBinder?.run {
@@ -74,6 +119,7 @@ class MainActivity : AppCompatActivity() {
             }
             startButton.text = "Start"
         }
+        */
 
         /*
         // in-class solution
@@ -113,5 +159,32 @@ class MainActivity : AppCompatActivity() {
     override fun onDestroy() {
         super.onDestroy()
         unbindService(serviceConnection)
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+        menuInflater.inflate(R.menu.main_menu, menu)
+        return super.onCreateOptionsMenu(menu)
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        /*when (item.itemId) {
+            R.id.action_start_timer -> startTimer()
+            R.id.action_stop_timer -> stopTimer()
+            else -> return super.onOptionsItemSelected(item)
+        }
+        return true*/
+        when (item.itemId) {
+            R.id.action_start_timer -> {
+                timerBinder?.start(100); true
+            }
+
+            R.id.action_stop_timer -> {
+                timerBinder?.stop(); true
+            }
+
+            else -> false
+
+        }
+        return super.onOptionsItemSelected(item)
     }
 }
